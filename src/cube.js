@@ -270,7 +270,8 @@ export function createCube(canvas, { palette, reducedMotion = false, isTouch = f
   }
 
   // ---------- pointer ----------
-  const ptr = { down: false, id: null, x: 0, y: 0, sx: 0, sy: 0, moved: 0, hit: null, kind: null, lastT: 0 };
+  const ptr = { down: false, id: null, x: 0, y: 0, sx: 0, sy: 0, moved: 0, hit: null, kind: null, lastT: 0, own: false };
+  const PITCH_MIN = -1.45, PITCH_MAX = 1.45; // enough to look at the top and the bottom
   const ndcV = new THREE.Vector2();
   function pick(x, y) {
     ndcV.set((x / st.w) * 2 - 1, -(y / st.h) * 2 + 1); // the canvas covers the viewport
@@ -283,10 +284,20 @@ export function createCube(canvas, { palette, reducedMotion = false, isTouch = f
     return new THREE.Vector2((p.x * 0.5 + 0.5) * st.w, (-p.y * 0.5 + 0.5) * st.h);
   }
   const locked = () => !!(st.busy || st.queue.length || st.wantSolve);
+  // touch: a finger on (or right next to) the cube controls the cube; anywhere else scrolls the page
+  const centerV = new THREE.Vector3(), edgeV = new THREE.Vector3();
+  function inCubeZone(x, y) {
+    holder.getWorldPosition(centerV);
+    const c = toScreen(centerV);
+    edgeV.copy(centerV); edgeV.y += 2.0 * holder.scale.x; // ~ silhouette radius of the cube
+    const r = c.distanceTo(toScreen(edgeV));
+    return Math.hypot(x - c.x, y - c.y) < r;
+  }
 
   function onDown(e) {
     if (e.button !== undefined && e.button !== 0) return;
     ptr.hit = pick(e.clientX, e.clientY);
+    ptr.own = isTouch && (!!ptr.hit || inCubeZone(e.clientX, e.clientY));
     ptr.down = true; ptr.id = e.pointerId; ptr.x = ptr.sx = e.clientX; ptr.y = ptr.sy = e.clientY; ptr.moved = 0; ptr.kind = null; ptr.lastT = performance.now();
     st.vYaw = st.vPitch = 0;
     st.lastInteract = st.time;
@@ -303,9 +314,9 @@ export function createCube(canvas, { palette, reducedMotion = false, isTouch = f
 
     if (!ptr.kind && Math.hypot(totX, totY) > 8) {
       // touch: horizontal swipes turn the cube, vertical ones scroll the page
-      if (isTouch && Math.abs(totY) > Math.abs(totX)) { ptr.down = false; return; }
+      if (isTouch && !ptr.own && Math.abs(totY) > Math.abs(totX)) { ptr.down = false; return; }
       ptr.kind = 'orbit';
-      if (ptr.hit && !st.twist && !locked() && !isTouch) {
+      if (ptr.hit && !st.twist && !locked()) {
         // which layer to twist: the one whose motion best matches the drag direction
         const hit = ptr.hit;
         const local = spin.worldToLocal(hit.point.clone());
@@ -338,9 +349,10 @@ export function createCube(canvas, { palette, reducedMotion = false, isTouch = f
       const along = new THREE.Vector2(totX, totY).dot(st.twist.dirScreen);
       setTwistAngle(st.twist, clamp(along / st.twist.pxPerRad, -Math.PI * 0.75, Math.PI * 0.75));
     } else if (ptr.kind === 'orbit') {
-      const k = 0.0062;
-      st.yaw += dx * k; st.pitch = clamp(st.pitch + dy * k * (isTouch ? 0 : 1), -0.9, 1.1);
-      st.vYaw = (dx * k) / dt * 16; st.vPitch = isTouch ? 0 : (dy * k) / dt * 16;
+      const k = isTouch ? 0.009 : 0.0062;
+      const tilt = isTouch && !ptr.own ? 0 : 1; // page-swipes outside the cube only turn it sideways
+      st.yaw += dx * k; st.pitch = clamp(st.pitch + dy * k * tilt, PITCH_MIN, PITCH_MAX);
+      st.vYaw = (dx * k) / dt * 16; st.vPitch = (dy * k * tilt) / dt * 16;
     }
   }
   function onUp(e) {
@@ -357,6 +369,11 @@ export function createCube(canvas, { palette, reducedMotion = false, isTouch = f
     ptr.kind = null;
   }
   canvas.addEventListener('pointerdown', onDown);
+  // stop the page from scrolling when the gesture starts on the cube
+  canvas.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    if (e.touches.length === 1 && (pick(t.clientX, t.clientY) || inCubeZone(t.clientX, t.clientY))) e.preventDefault();
+  }, { passive: false });
   window.addEventListener('pointermove', onMove, { passive: true });
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
@@ -416,10 +433,10 @@ export function createCube(canvas, { palette, reducedMotion = false, isTouch = f
 
     // orbit: inertia + slow auto-rotation
     if (!ptr.down || ptr.kind !== 'orbit') {
-      st.yaw += st.vYaw; st.pitch = clamp(st.pitch + st.vPitch, -0.9, 1.1);
+      st.yaw += st.vYaw; st.pitch = clamp(st.pitch + st.vPitch, PITCH_MIN, PITCH_MAX);
       const damp = Math.pow(0.94, dt * 60); st.vYaw *= damp; st.vPitch *= damp;
       if (!reducedMotion && !frozen) st.yaw += dt * 0.08;
-      if (!ptr.down) st.pitch += (0.42 - st.pitch) * Math.min(1, dt * 0.6);
+      if (!ptr.down && st.time - st.lastInteract > 3) st.pitch += (0.42 - st.pitch) * Math.min(1, dt * 0.6); // let people look, then settle back
     }
     root.rotation.set(st.pitch, 0, 0);
     spin.rotation.set(0, st.yaw, 0);
