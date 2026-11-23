@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>elimograph — concepts</title>
+<link rel="stylesheet" href="./fonts.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=block" />
+<style>
+  :root { --bg:#000; --fg:#F4F1EE; --dim:#8A847F; --acc:#FF4A1C; --pad:84px; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { background:var(--bg); color:var(--fg); }
+  body { font-family:'JetBrains Mono', monospace; font-size:13px; letter-spacing:0.02em; overflow-x:hidden; cursor:none; }
+  .hero { position:relative; width:100vw; height:100vh; overflow:hidden; }
+  .stage { position:absolute; inset:0; }
+  canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .ui { position:absolute; inset:0; pointer-events:none; }
+  .top { position:absolute; left:var(--pad); right:var(--pad); top:40px; display:flex; justify-content:space-between; align-items:center; text-transform:uppercase; }
+  .brand { font-family:'Disp'; font-weight:900; font-size:22px; letter-spacing:-0.04em; text-transform:none; }
+  .brand i { font-style:normal; color:var(--acc); }
+  .top .meta { color:var(--dim); display:flex; gap:32px; }
+  .top .meta b { color:var(--fg); font-weight:500; }
+  h1 { position:absolute; left:var(--pad); bottom:232px; font-family:'Disp'; font-weight:900; font-size:124px; line-height:0.92; letter-spacing:-0.045em; }
+  h1 span { color:var(--acc); }
+  .sub { position:absolute; left:var(--pad); bottom:168px; font-size:16px; color:var(--dim); text-transform:uppercase; letter-spacing:0.04em; }
+  .sub b { color:var(--fg); font-weight:500; }
+  .cta { position:absolute; left:var(--pad); bottom:80px; display:flex; gap:16px; }
+  .btn { height:56px; padding:0 28px; border-radius:28px; display:flex; align-items:center; gap:12px; font-family:'UI'; font-weight:700; font-size:17px; letter-spacing:-0.01em; }
+  .btn.primary { background:var(--acc); color:#000; box-shadow:0 0 40px rgba(255,74,28,0.45); }
+  .btn.ghost { border:1.5px solid rgba(244,241,238,0.28); color:var(--fg); }
+  .hint { position:absolute; right:var(--pad); bottom:80px; color:var(--dim); text-transform:uppercase; text-align:right; line-height:1.9; }
+  .hint b { color:var(--fg); font-weight:500; }
+  .cursor { position:absolute; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; background:#fff; box-shadow:0 0 16px rgba(255,74,28,0.9); }
+  .tip { position:absolute; min-width:260px; padding:14px 16px; border-radius:10px; background:rgba(10,8,7,0.82); border:1px solid rgba(255,74,28,0.55); box-shadow:0 0 32px rgba(255,74,28,0.25); backdrop-filter:blur(8px); }
+  .tip .t { font-family:'Disp'; font-weight:900; font-size:24px; letter-spacing:-0.035em; text-transform:none; }
+  .tip .c { margin-top:4px; color:var(--dim); text-transform:uppercase; }
+  .tip .p { margin-top:10px; color:var(--acc); text-transform:uppercase; }
+  .list { display:none; }
+
+  /* phone */
+  @media (max-width: 760px) {
+    :root { --pad:24px; }
+    .hero { height:auto; display:flex; flex-direction:column; }
+    .ui { display:contents; }
+    .head { order:1; } .stage { order:2; position:relative; inset:auto; height:520px; margin-top:8px; } .hint { order:3; }
+    .top { top:24px; font-size:11px; }
+    .top .meta span:first-child { display:none; }
+    .head { padding:88px var(--pad) 0; }
+    h1 { position:static; font-size:58px; }
+    .sub { position:static; margin-top:16px; font-size:12px; line-height:1.6; }
+    .cta { position:static; margin-top:20px; }
+    .btn { height:48px; font-size:15px; padding:0 22px; }
+    .hint { position:static; padding:0 var(--pad) 8px; text-align:left; font-size:11px; }
+    .cursor, .tip { display:none; }
+    .list { display:block; padding:8px var(--pad) 48px; }
+    .list h2 { font-size:11px; text-transform:uppercase; color:var(--dim); font-weight:500; padding:16px 0; border-bottom:1px solid #1c1a19; display:flex; justify-content:space-between; }
+    .row { display:flex; gap:16px; align-items:center; padding:14px 0; border-bottom:1px solid #1c1a19; }
+    .thumb { width:72px; height:72px; border-radius:10px; background:#0b0908 center/cover; flex:none; border:1px solid #241f1c; position:relative; }
+    .row.soon .thumb { border-color:rgba(255,74,28,0.35); box-shadow:inset 0 0 24px rgba(255,74,28,0.18); }
+    .row .n { font-family:'Disp'; font-weight:900; font-size:22px; letter-spacing:-0.035em; }
+    .row .m { margin-top:4px; color:var(--dim); font-size:11px; text-transform:uppercase; }
+    .row.soon .n { color:#5a5450; }
+    .row .play { margin-left:auto; width:36px; height:36px; border-radius:50%; border:1.5px solid rgba(244,241,238,0.25); display:grid; place-items:center; color:var(--acc); font-size:12px; }
+  }
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="ui">
+    <div class="top">
+      <div class="brand">elimograph<i>.</i></div>
+      <div class="meta"><span>Motion design · Berlin</span><span><b>08</b> works</span><span>Contact</span></div>
+    </div>
+    <div class="head">
+      <h1>Your product,<br><span>in motion.</span></h1>
+      <div class="sub"><b>Launch videos</b> for startups &amp; apps · EN / DE</div>
+      <div class="cta"><div class="btn primary">Contact</div><div class="btn ghost">X</div></div>
+    </div>
+    <div class="hint"><b>Drag</b> to turn · <b>Scroll</b> to twist<br>Click a cell to play</div>
+    <div class="cursor" id="cur"></div>
+    <div class="tip" id="tip"><div class="t">Ploto</div><div class="c">Launch teaser · 9:16 · 0:10</div><div class="p">▶ Click to play</div></div>
+  </div>
+</section>
+<section class="list" id="list"><h2><span>Works</span><span>08</span></h2></section>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

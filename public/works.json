@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Liquid Glass",
+    "client": "@avenra/liquid-glass",
+    "type": "Launch video",
+    "format": "9:16",
+    "video": "works/liquid-glass.mp4",
+    "poster": "works/liquid-glass.jpg",
+    "preview": "works/liquid-glass-preview.mp4"
+  },
+  {
+    "title": "Claude Code",
+    "client": "Concept",
+    "type": "Launch video",
+    "format": "9:16",
+    "video": "works/claude-code.mp4",
+    "poster": "works/claude-code.jpg",
+    "preview": "works/claude-code-preview.mp4"
+  },
+  {
+    "title": "TimeBloc",
+    "client": "TimeBloc",
+    "type": "Concept reel",
+    "format": "9:16",
+    "video": "works/timebloc.mp4",
+    "poster": "works/timebloc.jpg",
+    "preview": "works/timebloc-preview.mp4"
+  },
+  {
+    "title": "BewertungsFlow",
+    "client": "BewertungsFlow",
+    "type": "Teaser",
+    "format": "9:16",
+    "video": "works/bewertungsflow.mp4",
+    "poster": "works/bewertungsflow.jpg",
+    "preview": "works/bewertungsflow-preview.mp4"
+  }
+]
