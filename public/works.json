@@ -10,7 +10,7 @@
   },
   {
     "title": "Claude Code",
-    "client": "Concept",
+    "client": "Concept, not affiliated with Anthropic",
     "type": "Launch video",
     "format": "9:16",
     "video": "works/claude-code.mp4",
@@ -34,5 +34,14 @@
     "video": "works/bewertungsflow.mp4",
     "poster": "works/bewertungsflow.jpg",
     "preview": "works/bewertungsflow-preview.mp4"
+  },
+  {
+    "title": "Uber Eats",
+    "client": "Concept, not affiliated with Uber",
+    "type": "Launch video",
+    "format": "9:16",
+    "video": "works/uber-eats.mp4",
+    "poster": "works/uber-eats.jpg",
+    "preview": "works/uber-eats-preview.mp4"
   }
 ]
