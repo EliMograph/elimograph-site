@@ -1,5 +1,14 @@
 [
   {
+    "title": "Showreel",
+    "client": "elimograph",
+    "type": "Showreel",
+    "format": "9:16",
+    "video": "works/showreel.mp4",
+    "poster": "works/showreel.jpg",
+    "preview": "works/showreel-preview.mp4"
+  },
+  {
     "title": "Liquid Glass",
     "client": "@avenra/liquid-glass",
     "type": "Launch video",
